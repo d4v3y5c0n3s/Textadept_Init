@@ -53,7 +53,7 @@ keys.xah_mode = {
       buffer.word_right_end_extend()
     end
   end,
-  [','] = function() end,--buffer.page_down,--incorrect action, will need to change
+  [','] = function() ui.goto_view(1) end,
   ['h'] = function()
     if buffer.selection_empty then
       buffer.para_up()
@@ -87,47 +87,45 @@ keys.xah_mode = {
   ['5'] = buffer.clear,
   ['6'] = function()
     if buffer.selection_empty then
-      buffer.para_down_extend()
+      textadept.editing.select_paragraph()
     else
       buffer.set_empty_selection(buffer.current_pos)
     end
   end,
   ['7'] = function()
     if buffer.selection_empty then
-      buffer.line_down_extend()
+      textadept.editing.select_line()
     else
       buffer.set_empty_selection(buffer.current_pos)
     end
   end,
   ['8'] = function()
     if buffer.selection_empty then
-      buffer.word_right_extend()
+      textadept.editing.select_word()
     else
       buffer.set_empty_selection(buffer.current_pos)
     end
   end,
-  ['9'] = function() end,--selects next text between braces or quotes
-  ['g'] = function() end,--delete the current text block
+  ['9'] = function()
+    if buffer.selection_empty then
+      textadept.editing.select_enclosed()
+    else
+      buffer.set_empty_selection(buffer.current_pos)
+    end
+  end,
+  ['g'] = function()
+    buffer.set_selection(0, 0)
+    textadept.editing.select_paragraph()
+    buffer.clear()
+  end,
   ['b'] = buffer.upper_case,
   ['/'] = function() end,--goto matching bracket
-  ['a'] = function()
-    --ui.command_entry.height = 20
-    --ui.command_entry.focus()
-  end,--command entry
+  ['a'] = function() end,--command entry
   ['m'] = function() end,--goto left bracket
   ['.'] = function() end,--goto right bracket
   ['z'] = function()
     textadept.editing.toggle_comment()
   end,
-  --GOAL: make "find" more interactive; consider:
-  -- operating on selections rather than the whole document
-  -- previewing regex selections & replacements as you do them
-  -- ensuring "find" is very keybord-friendly
-  -- ensure keyboard accessibility of search options like:
-  --  search in files
-  --  switch to regex
-  --  switch to replace
-  --  cancel out with no changes
   ['n'] = function()
     ui.find.focus()
   end,
@@ -138,6 +136,7 @@ keys.xah_mode = {
   ['4'] = function()
     view.split(_G.view, false)
   end,
+  
   -- Unused keys
   ['1'] = function() end,
   ['2'] = function() end,
@@ -175,10 +174,13 @@ events.connect(events.FIND_TEXT_CHANGED, function()
 end)
 
 -- theme
-view:set_theme(not CURSES and 'base16-github' or 'term')
+view:set_theme(not CURSES and 'base16-gruvbox-dark-hard' or 'term')
 
 -- wrap lines by default
 view.wrap_mode = view.WRAP_WORD
+
+-- find defaults
+ui.find.regex = true
 
 -- tab settings
 buffer.use_tabs = false
